@@ -212,6 +212,7 @@ from datetime import datetime, timedelta
 import re
 from geopy.geocoders import Nominatim
 import logging
+from urllib.parse import urljoin
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -288,22 +289,23 @@ class BaseScraper(ABC):
         return None, None
 
 # scrapers/nc_state_scraper.py
+
 class NCStateScraper(BaseScraper):
     async def scrape_events(self) -> List[Dict[str, Any]]:
         events = []
         base_urls = self.config.get('urls', [])
-        
+
         for url in base_urls:
             content = await self.get_page_content(url)
             if not content:
                 continue
-                
+
             soup = BeautifulSoup(content, 'html.parser')
             event_selectors = self.config.get('selectors', {})
-            
-            # Find event containers
-            event_containers = soup.select(event_selectors.get('container', '.event'))
-            
+
+            # Find event containers for NC State calendar
+            event_containers = soup.select(event_selectors.get('container', 'li.event_item'))
+
             for container in event_containers:
                 try:
                     event_data = await self.extract_event_data(container, event_selectors)
@@ -312,35 +314,47 @@ class NCStateScraper(BaseScraper):
                 except Exception as e:
                     logger.error(f"Error extracting event data: {str(e)}")
                     continue
-        
+
         return events
-    
+
     async def extract_event_data(self, container, selectors: Dict[str, str]) -> Optional[Dict[str, Any]]:
-        title_elem = container.select_one(selectors.get('title', '.title'))
-        date_elem = container.select_one(selectors.get('date', '.date'))
-        
+        # Use correct selectors for NC State event calendar
+        title_elem = container.select_one(selectors.get('title', 'h3.event_title'))
+        date_elem = container.select_one(selectors.get('date', 'span.event_date'))
+
         if not title_elem or not date_elem:
             return None
-        
+
         title = title_elem.get_text(strip=True)
         date_str = date_elem.get_text(strip=True)
-        start_date = self.parse_date(date_str)
-        
+
+        # Clean up date string: Remove day-of-week and parse just "Month Day, Year" part
+        # E.g., "Tue, Aug 6, 2024 9 am to 10 am" -> "Aug 6, 2024"
+        date_clean = re.sub(r'^[A-Za-z]{3,9},?\s*', '', date_str)  # Remove weekday
+        # Only keep date part (not time range)
+        date_match = re.match(r'([A-Za-z]+ \d{1,2}, \d{4})', date_clean)
+        date_base = date_match.group(1) if date_match else date_clean
+
+        start_date = self.parse_date(date_base)
         if not start_date:
             return None
-        
-        # Extract other fields
-        description_elem = container.select_one(selectors.get('description', '.description'))
-        location_elem = container.select_one(selectors.get('location', '.location'))
-        url_elem = container.select_one(selectors.get('url', 'a'))
-        
+
+        # Extract other fields using NC State selectors
+        description_elem = container.select_one(selectors.get('description', 'div.event_summary'))
+        location_elem = container.select_one(selectors.get('location', 'span.event_location'))
+        url_elem = container.select_one(selectors.get('url', 'a.event_link'))
+
         description = description_elem.get_text(strip=True) if description_elem else ""
         location = location_elem.get_text(strip=True) if location_elem else ""
+
+        # Get absolute URL to event detail page
         source_url = url_elem.get('href') if url_elem else ""
-        
-        # Geocode location
+        if source_url and not source_url.startswith("http"):
+            source_url = urljoin("https://calendar.ncsu.edu", source_url)
+
+        # Geocode location (optional)
         lat, lng = self.geocode_location(location) if location else (None, None)
-        
+
         return {
             'title': title,
             'description': description,
@@ -353,12 +367,12 @@ class NCStateScraper(BaseScraper):
             'organization_id': self.organization_id,
             'tags': self.extract_tags(title, description)
         }
-    
+
     def extract_tags(self, title: str, description: str) -> List[str]:
         """Extract relevant tags from title and description"""
         tags = []
         text = f"{title} {description}".lower()
-        
+
         tag_keywords = {
             'workshop': ['workshop', 'hands-on', 'training'],
             'conference': ['conference', 'symposium', 'summit'],
@@ -369,11 +383,11 @@ class NCStateScraper(BaseScraper):
             'health': ['health', 'medical', 'wellness'],
             'business': ['business', 'entrepreneur', 'startup']
         }
-        
+
         for tag, keywords in tag_keywords.items():
             if any(keyword in text for keyword in keywords):
                 tags.append(tag)
-        
+
         return tags
 
 # scrapers/unc_scraper.py
