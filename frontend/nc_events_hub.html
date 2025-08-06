@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventPulse NC - Never Miss What Matters in North Carolina</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e40af 0%, #3730a3 50%, #581c87 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            color: #1e293b;
+            font-size: 2.8em;
+            margin-bottom: 8px;
+            text-align: center;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1e40af, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tagline {
+            text-align: center;
+            color: #64748b;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .nav-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .view-toggle {
+            display: flex;
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 6px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .toggle-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        .toggle-btn.active {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .toggle-btn:not(.active) {
+            background: transparent;
+            color: #64748b;
+        }
+
+        .filter-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .filter-input {
+            padding: 8px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+        .filter-input:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .main-content {
+            display: flex;
+            gap: 20px;
+            height: 750px;
+        }
+
+        .left-panel {
+            width: 30%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow-y: auto;
+        }
+
+        .panel-title {
+            font-size: 1.4em;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .bubble-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            justify-content: center;
+        }
+
+        .bubble {
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 0.85em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 3px solid transparent;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            position: relative;
+        }
+
+        .bubble::before {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: 50%;
+            padding: 3px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.5), rgba(255,255,255,0.1));
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+        }
+
+        .bubble:hover {
+            transform: scale(1.15) translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+        }
+
+        .bubble .count {
+            font-size: 1.1em;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+        /* NC University Colors & Categories */
+        .bubble.academic {
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(135deg, #4b9cd3, #13294b);
+            color: white;
+        }
+
+        .bubble.government {
+            width: 85px;
+            height: 85px;
+            background: linear-gradient(135deg, #dc2626, #991b1b);
+            color: white;
+        }
+
+        .bubble.conferences {
+            width: 95px;
+            height: 95px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+
+        .bubble.workshops {
+            width: 88px;
+            height: 88px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .bubble.holidays {
+            width: 92px;
+            height: 92px;
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+        }
+
+        .bubble.meetings {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #06b6d4, #0891b2);
+            color: white;
+        }
+
+        .right-panel {
+            width: 70%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .heatmap-container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .heatmap-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .date-navigation {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .nav-btn {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-btn:hover {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+        }
+
+        .current-date {
+            font-weight: 700;
+            color: #1e293b;
+            font-size: 1.1em;
+            padding: 0 20px;
+        }
+
+        .heatmap-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 70px repeat(7, 1fr);
+            grid-template-rows: 35px repeat(24, 1fr);
+            gap: 3px;
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .time-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75em;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .day-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #1e293b;
+            background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+
+        .heatmap-cell {
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .heatmap-cell:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+        }
+
+        .heatmap-cell.density-0 {
+            background: #f8fafc;
+        }
+
+        .heatmap-cell.density-1 {
+            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+        }
+
+        .heatmap-cell.density-2 {
+            background: linear-gradient(135deg, #93c5fd, #60a5fa);
+        }
+
+        .heatmap-cell.density-3 {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+
+        .heatmap-cell.density-4 {
+            background: linear-gradient(135deg, #1d4ed8, #1e40af);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            width: 95%;
+            max-width: 1200px;
+            height: 85%;
+            padding: 30px;
+            position: relative;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .modal-title {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .close-btn {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 16px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+        }
+
+        .map-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #065f46, #047857, #059669);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .nc-outline {
+            width: 75%;
+            height: 55%;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 25px;
+            position: relative;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(2px);
+        }
+
+        .event-dot {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 3px solid white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .event-dot:hover {
+            transform: scale(1.8);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        /* University locations */
+        .event-dot.unc {
+            background: #4b9cd3;
+            top: 38%;
+            left: 52%;
+        }
+
+        .event-dot.ncsu {
+            background: #cc0000;
+            top: 45%;
+            left: 58%;
+        }
+
+        .event-dot.duke {
+            background: #003366;
+            top: 42%;
+            left: 55%;
+        }
+
+        .event-dot.government {
+            background: #dc2626;
+            top: 46%;
+            left: 56%;
+        }
+
+        .event-dot.conference {
+            background: #f59e0b;
+            top: 35%;
+            left: 65%;
+        }
+
+        .legend {
+            position: absolute;
+            bottom: 24px;
+            left: 24px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .legend h4 {
+            margin-bottom: 12px;
+            color: #1e293b;
+            font-weight: 700;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .legend-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .map-controls {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .map-control-btn {
+            background: rgba(255, 255, 255, 0.95);
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .map-control-btn:hover {
+            background: white;
+            transform: scale(1.1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            pointer-events: none;
+            z-index: 1001;
+            display: none;
+            max-width: 200px;
+            font-weight: 500;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            padding: 16px 24px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border: 1px solid #cbd5e1;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #1e40af;
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+                height: auto;
+            }
+            
+            .left-panel, .right-panel {
+                width: 100%;
+                height: auto;
+            }
+            
+            .heatmap-grid {
+                grid-template-columns: 50px repeat(7, 1fr);
+                grid-template-rows: 25px repeat(24, 25px);
+            }
+
+            .nav-controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <h1>🏛️ EventPulse NC</h1>
+            <p class="tagline">Never Miss What Matters in North Carolina</p>
+            <div class="nav-controls">
+                <div class="view-toggle">
+                    <button class="toggle-btn active" onclick="toggleView('events')">📅 Scheduled Events</button>
+                    <button class="toggle-btn" onclick="toggleView('holidays')">🎉 Holidays & Breaks</button>
+                </div>
+                <div class="filter-controls">
+                    <input type="text" class="filter-input" placeholder="Search events..." id="searchInput">
+                    <select class="filter-input" id="organizationFilter">
+                        <option value="">All Organizations</option>
+                        <option value="unc">UNC System</option>
+                        <option value="ncsu">NC State</option>
+                        <option value="duke">Duke University</option>
+                        <option value="government">State Government</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-number">2,847</div>
+                <div class="stat-label">Total Events</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">156</div>
+                <div class="stat-label">This Week</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">23</div>
+                <div class="stat-label">Today</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">127</div>
+                <div class="stat-label">Organizations</div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="left-panel">
+                <div class="panel-title">
+                    📊 Event Categories
+                </div>
+                <div class="bubble-container" id="bubbleContainer">
+                    <div class="bubble academic" onclick="openCategoryMap('academic')" title="UNC, NC State, Duke & more">
+                        <div>🎓 Academic</div>
+                        <div class="count">1,247</div>
+                    </div>
+                    <div class="bubble government" onclick="openCategoryMap('government')" title="State agencies & departments">
+                        <div>🏛️ Government</div>
+                        <div class="count">543</div>
+                    </div>
+                    <div class="bubble conferences" onclick="openCategoryMap('conferences')" title="Professional conferences">
+                        <div>🎤 Conferences</div>
+                        <div class="count">392</div>
+                    </div>
+                    <div class="bubble workshops" onclick="openCategoryMap('workshops')" title="Hands-on learning">
+                        <div>🔧 Workshops</div>
+                        <div class="count">418</div>
+                    </div>
+                    <div class="bubble meetings" onclick="openCategoryMap('meetings')" title="Public meetings & hearings">
+                        <div>👥 Meetings</div>
+                        <div class="count">247</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <div class="heatmap-container">
+                    <div class="heatmap-header">
+                        <div class="panel-title">📈 Activity Heat Map</div>
+                        <div class="date-navigation">
+                            <button class="nav-btn" onclick="previousWeek()">← Previous Week</button>
+                            <span class="current-date">August 4-10, 2025</span>
+                            <button class="nav-btn" onclick="nextWeek()">Next Week →</button>
+                        </div>
+                    </div>
+                    <div class="heatmap-grid" id="heatmapGrid">
+                        <!-- Grid will be generated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interactive NC Map Modal -->
+    <div class="modal" id="mapModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">🗺️ North Carolina Events Map</h2>
+                <button class="close-btn" onclick="closeModal()">✕ Close</button>
+            </div>
+            <div class="map-placeholder">
+                <div class="nc-outline">
+                    <div class="event-dot unc" onclick="showEventDetails('UNC Chapel Hill Workshop', 'August 6, 2025', '2:00 PM - 4:00 PM', 'Chapel Hill')"></div>
+                    <div class="event-dot ncsu" onclick="showEventDetails('NC State Tech Conference', 'August 7, 2025', '9:00 AM - 5:00 PM', 'Raleigh')"></div>
+                    <div class="event-dot duke" onclick="showEventDetails('Duke Medical Symposium', 'August 8, 2025', '1:00 PM - 6:00 PM', 'Durham')"></div>
+                    <div class="event-dot government" onclick="showEventDetails('State Budget Hearing', 'August 9, 2025', '10:00 AM - 12:00 PM', 'Raleigh')"></div>
+                    <div class="event-dot conference" onclick="showEventDetails('Eastern NC Business Summit', 'August 10, 2025', '8:00 AM - 4:00 PM', 'Greenville')"></div>
+                </div>
+                <div class="legend">
+                    <h4>Event Types</h4>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: #4b9cd3;"></div>
+                        <span>UNC System</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: #cc0000;"></div>
+                        <span>NC State</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: #003366;"></div>
+                        <span>Duke University</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: #dc2626;"></div>
+                        <span>State Government</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background: #f59e0b;"></div>
+                        <span>Regional Events</span>
+                    </div>
+                </div>
+                <div class="map-controls">
+                    <button class="map-control-btn" onclick="zoomIn()" title="Zoom In">🔍+</button>
+                    <button class="map-control-btn" onclick="zoomOut()" title="Zoom Out">🔍-</button>
+                    <button class="map-control-btn" onclick="resetView()" title="Reset View">🏠</button>
+                    <button class="map-control-btn" onclick="toggleFullscreen()" title="Fullscreen">⛶</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // Enhanced data structure for events
+        const eventData = {
+            academic: { count: 1247, color: '#4b9cd3', events: [] },
+            government: { count: 543, color: '#dc2626', events: [] },
+            conferences: { count: 392, color: '#f59e0b', events: [] },
+            workshops: { count: 418, color: '#10b981', events: [] },
+            meetings: { count: 247, color: '#06b6d4', events: [] }
+        };
+
+        const holidayData = {
+            'spring-break': { count: 17, color: '#f59e0b', name: 'Spring Break' },
+            'state-holidays': { count: 8, color: '#8b5cf6', name: 'State Holidays' },
+            'federal-holidays': { count: 11, color: '#dc2626', name: 'Federal Holidays' },
+            'winter-break': { count: 15, color: '#06b6d4', name: 'Winter Break' },
+            'summer-break': { count: 12, color: '#10b981', name: 'Summer Break' },
+            'thanksgiving': { count: 14, color: '#f97316', name: 'Thanksgiving' }
+        };
+
+        // Initialize enhanced heatmap grid
+        function initializeHeatmap() {
+            const grid = document.getElementById('heatmapGrid');
+            const days = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const hours = Array.from({length: 24}, (_, i) => i);
+
+            // Clear existing content
+            grid.innerHTML = '';
+
+            // Add day headers
+            days.forEach(day => {
+                const dayCell = document.createElement('div');
+                dayCell.className = 'day-label';
+                dayCell.textContent = day;
+                grid.appendChild(dayCell);
+            });
+
+            // Add time labels and cells
+            hours.forEach(hour => {
+                const timeLabel = document.createElement('div');
+                timeLabel.className = 'time-label';
+                timeLabel.textContent = hour < 10 ? `0${hour}:00` : `${hour}:00`;
+                grid.appendChild(timeLabel);
+
+                for (let day = 0; day < 7; day++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'heatmap-cell';
+                    
+                    // Simulate realistic event density patterns
+                    let density = 0;
+                    
+                    // Business hours have higher density
+                    if (hour >= 8 && hour <= 17 && day < 5) {
+                        density = Math.random() * 0.8 + 0.2;
+                    } else if (hour >= 9 && hour <= 16 && day >= 5) {
+                        density = Math.random() * 0.4;
+                    } else {
+                        density = Math.random() * 0.1;
+                    }
+
+                    const densityLevel = Math.floor(density * 5);
+                    cell.classList.add(`density-${densityLevel}`);
+
+                    // Enhanced interactions
+                    cell.addEventListener('click', (e) => {
+                        openMapModal();
+                    });
+
+                    cell.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        openMapModal();
+                    });
+
+                    cell.addEventListener('mouseenter', (e) => {
+                        const eventCount = Math.floor(density * 20);
+                        showTooltip(e, `${eventCount} events scheduled\nClick to view on map`);
+                    });
+
+                    cell.addEventListener('mouseleave', hideTooltip);
+
+                    grid.appendChild(cell);
+                }
+            });
+        }
+
+        function toggleView(view) {
+            const buttons = document.querySelectorAll('.toggle-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const bubbleContainer = document.getElementById('bubbleContainer');
+            const panelTitle = document.querySelector('.panel-title');
+            
+            if (view === 'holidays') {
+                panelTitle.innerHTML = '🎉 Holiday Categories';
+                bubbleContainer.innerHTML = Object.entries(holidayData).map(([key, data]) => `
+                    <div class="bubble holidays" onclick="openCategoryMap('${key}')" title="${data.name}">
+                        <div>${getHolidayIcon(key)} ${data.name}</div>
+                        <div class="count">${data.count}</div>
+                    </div>
+                `).join('');
+            } else {
+                panelTitle.innerHTML = '📊 Event Categories';
+                bubbleContainer.innerHTML = `
+                    <div class="bubble academic" onclick="openCategoryMap('academic')" title="UNC, NC State, Duke & more">
+                        <div>🎓 Academic</div>
+                        <div class="count">1,247</div>
+                    </div>
+                    <div class="bubble government" onclick="openCategoryMap('government')" title="State agencies & departments">
+                        <div>🏛️ Government</div>
+                        <div class="count">543</div>
+                    </div>
+                    <div class="bubble conferences" onclick="openCategoryMap('conferences')" title="Professional conferences">
+                        <div>🎤 Conferences</div>
+                        <div class="count">392</div>
+                    </div>
+                    <div class="bubble workshops" onclick="openCategoryMap('workshops')" title="Hands-on learning">
+                        <div>🔧 Workshops</div>
+                        <div class="count">418</div>
+                    </div>
+                    <div class="bubble meetings" onclick="openCategoryMap('meetings')" title="Public meetings & hearings">
+                        <div>👥 Meetings</div>
+                        <div class="count">247</div>
+                    </div>
+                `;
+            }
+            
+            // Update stats bar based on view
+            updateStatsBar(view);
+        }
+
+        function getHolidayIcon(key) {
+            const icons = {
+                'spring-break': '🌸',
+                'state-holidays': '🏛️',
+                'federal-holidays': '🇺🇸',
+                'winter-break': '❄️',
+                'summer-break': '☀️',
+                'thanksgiving': '🦃'
+            };
+            return icons[key] || '📅';
+        }
+
+        function updateStatsBar(view) {
+            const statNumbers = document.querySelectorAll('.stat-number');
+            const statLabels = document.querySelectorAll('.stat-label');
+            
+            if (view === 'holidays') {
+                statNumbers[0].textContent = '77';
+                statLabels[0].textContent = 'Total Holidays';
+                statNumbers[1].textContent = '3';
+                statLabels[1].textContent = 'This Week';
+                statNumbers[2].textContent = '0';
+                statLabels[2].textContent = 'Today';
+                statNumbers[3].textContent = '45';
+                statLabels[3].textContent = 'Institutions';
+            } else {
+                statNumbers[0].textContent = '2,847';
+                statLabels[0].textContent = 'Total Events';
+                statNumbers[1].textContent = '156';
+                statLabels[1].textContent = 'This Week';
+                statNumbers[2].textContent = '23';
+                statLabels[2].textContent = 'Today';
+                statNumbers[3].textContent = '127';
+                statLabels[3].textContent = 'Organizations';
+            }
+        }
+
+        function openMapModal() {
+            document.getElementById('mapModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('mapModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        function openCategoryMap(category) {
+            openMapModal();
+            // Simulate filtering map markers based on category
+            const dots = document.querySelectorAll('.event-dot');
+            dots.forEach(dot => {
+                dot.style.display = 'block';
+                dot.style.opacity = '0.3';
+            });
+            
+            // Highlight relevant category
+            if (category === 'academic') {
+                document.querySelectorAll('.event-dot.unc, .event-dot.ncsu, .event-dot.duke').forEach(dot => {
+                    dot.style.opacity = '1';
+                    dot.style.transform = 'scale(1.2)';
+                });
+            } else if (category === 'government') {
+                document.querySelectorAll('.event-dot.government').forEach(dot => {
+                    dot.style.opacity = '1';
+                    dot.style.transform = 'scale(1.2)';
+                });
+            }
+            
+            console.log(`Filtering map for category: ${category}`);
+        }
+
+        function showEventDetails(title, date, time, location) {
+            const details = `
+Event: ${title}
+Date: ${date}
+Time: ${time}
+Location: ${location}
+Organization: ${getOrganizationFromTitle(title)}
+
+Click to view full details and registration info.
+            `;
+            alert(details);
+        }
+
+        function getOrganizationFromTitle(title) {
+            if (title.includes('UNC')) return 'University of North Carolina';
+            if (title.includes('NC State')) return 'North Carolina State University';
+            if (title.includes('Duke')) return 'Duke University';
+            if (title.includes('State')) return 'NC State Government';
+            return 'Regional Organization';
+        }
+
+        function showTooltip(e, text) {
+            const tooltip = document.getElementById('tooltip');
+            tooltip.innerHTML = text.replace(/\n/g, '<br>');
+            tooltip.style.display = 'block';
+            tooltip.style.left = e.pageX + 15 + 'px';
+            tooltip.style.top = e.pageY - 40 + 'px';
+        }
+
+        function hideTooltip() {
+            document.getElementById('tooltip').style.display = 'none';
+        }
+
+        function previousWeek() {
+            const dateElement = document.querySelector('.current-date');
+            dateElement.textContent = 'July 28 - August 3, 2025';
+            console.log('Navigate to previous week');
+            // Simulate data refresh
+            setTimeout(() => {
+                initializeHeatmap();
+            }, 300);
+        }
+
+        function nextWeek() {
+            const dateElement = document.querySelector('.current-date');
+            dateElement.textContent = 'August 11-17, 2025';
+            console.log('Navigate to next week');
+            // Simulate data refresh
+            setTimeout(() => {
+                initializeHeatmap();
+            }, 300);
+        }
+
+        function zoomIn() {
+            const ncOutline = document.querySelector('.nc-outline');
+            ncOutline.style.transform = 'scale(1.2)';
+            console.log('Zoom in map');
+        }
+
+        function zoomOut() {
+            const ncOutline = document.querySelector('.nc-outline');
+            ncOutline.style.transform = 'scale(0.8)';
+            console.log('Zoom out map');
+        }
+
+        function resetView() {
+            const ncOutline = document.querySelector('.nc-outline');
+            ncOutline.style.transform = 'scale(1)';
+            const dots = document.querySelectorAll('.event-dot');
+            dots.forEach(dot => {
+                dot.style.opacity = '1';
+                dot.style.transform = 'scale(1)';
+            });
+            console.log('Reset map view');
+        }
+
+        function toggleFullscreen() {
+            const modal = document.getElementById('mapModal');
+            if (modal.style.width === '100vw') {
+                modal.style.width = '95%';
+                modal.style.height = '85%';
+            } else {
+                modal.style.width = '100vw';
+                modal.style.height = '100vh';
+            }
+        }
+
+        // Search functionality
+        function initializeSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const organizationFilter = document.getElementById('organizationFilter');
+            
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase();
+                console.log(`Searching for: ${query}`);
+                // Simulate search filtering
+                if (query.length > 2) {
+                    // Highlight matching cells in heatmap
+                    document.querySelectorAll('.heatmap-cell').forEach(cell => {
+                        cell.style.opacity = Math.random() > 0.7 ? '1' : '0.3';
+                    });
+                } else {
+                    // Reset all cells
+                    document.querySelectorAll('.heatmap-cell').forEach(cell => {
+                        cell.style.opacity = '1';
+                    });
+                }
+            });
+
+            organizationFilter.addEventListener('change', (e) => {
+                const org = e.target.value;
+                console.log(`Filtering by organization: ${org}`);
+                // Simulate organization filtering
+                updateStatsForOrganization(org);
+            });
+        }
+
+        function updateStatsForOrganization(org) {
+            const statNumbers = document.querySelectorAll('.stat-number');
+            
+            if (org === 'unc') {
+                statNumbers[0].textContent = '847';
+                statNumbers[1].textContent = '42';
+                statNumbers[2].textContent = '8';
+            } else if (org === 'ncsu') {
+                statNumbers[0].textContent = '623';
+                statNumbers[1].textContent = '31';
+                statNumbers[2].textContent = '6';
+            } else if (org === 'duke') {
+                statNumbers[0].textContent = '445';
+                statNumbers[1].textContent = '18';
+                statNumbers[2].textContent = '3';
+            } else if (org === 'government') {
+                statNumbers[0].textContent = '543';
+                statNumbers[1].textContent = '28';
+                statNumbers[2].textContent = '4';
+            } else {
+                // Reset to all organizations
+                statNumbers[0].textContent = '2,847';
+                statNumbers[1].textContent = '156';
+                statNumbers[2].textContent = '23';
+            }
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeHeatmap();
+            initializeSearch();
+            
+            // Add keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeModal();
+                } else if (e.key === 'm' && e.ctrlKey) {
+                    e.preventDefault();
+                    openMapModal();
+                } else if (e.key === 'ArrowLeft' && e.ctrlKey) {
+                    e.preventDefault();
+                    previousWeek();
+                } else if (e.key === 'ArrowRight' && e.ctrlKey) {
+                    e.preventDefault();
+                    nextWeek();
+                }
+            });
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('mapModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Simulate real-time updates
+        setInterval(() => {
+            const todayCount = document.querySelectorAll('.stat-number')[2];
+            const currentCount = parseInt(todayCount.textContent);
+            if (Math.random() > 0.95) { // 5% chance of new event
+                todayCount.textContent = currentCount + 1;
+                todayCount.style.color = '#10b981';
+                setTimeout(() => {
+                    todayCount.style.color = '#1e40af';
+                }, 2000);
+            }
+        }, 10000);
+    </script>
+</body>
+</html>
