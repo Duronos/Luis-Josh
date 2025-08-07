@@ -350,7 +350,7 @@ class NCStateScraper(BaseScraper):
         # Get absolute URL to event detail page
         source_url = url_elem.get('href') if url_elem else ""
         if source_url and not source_url.startswith("http"):
-            source_url = urljoin("https://calendar.ncsu.edu", source_url)
+            source_url = urljoin("https://calendar.ncsu.edu/calendar", source_url)
 
         # Geocode location (optional)
         lat, lng = self.geocode_location(location) if location else (None, None)
